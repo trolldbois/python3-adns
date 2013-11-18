@@ -1,0 +1,5 @@
+include MANIFEST.in
+include MANIFEST
+include GPL
+include ChangeLog
+include pymemcompat.h

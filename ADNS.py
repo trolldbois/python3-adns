@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """High-level interface to adns."""
 
 import adns
@@ -22,20 +20,20 @@ class QueryEngine:
 
     def submit(self, qname, rr, flags=0, callback=None, extra=None):
         callback = callback or self.callback_submit
-        if not callback: raise Error, "callback required"
+        if not callback: raise Error("callback required")
         q = self._s.submit(qname, rr, flags)
         self._queries[q] = qname, rr, flags, callback, extra
 
     def submit_reverse(self, qname, rr, flags=0, callback=None, extra=None):
         callback = callback or self.callback_submit_reverse
-        if not callback: raise Error, "callback required"
+        if not callback: raise Error("callback required")
         q = self._s.submit_reverse(qname, rr, flags)
         self._queries[q] = qname, rr, flags, callback, extra
 
     def submit_reverse_any(self, qname, rr, flags=0,
                            callback=None, extra=None):
         callback = callback or self.callback_submit_reverse_any
-        if not callback: raise Error, "callback required"
+        if not callback: raise Error("callback required")
         q = self._s.submit_reverse_any(qname, rr, flags)
         self._queries[q] = qname, rr, flags, callback, extra
 
@@ -49,7 +47,7 @@ class QueryEngine:
             answer = q.check()
             qname, rr, flags, callback, extra = self._queries[q]
             del self._queries[q]
-            apply(callback, (answer, qname, rr, flags, extra))
+            callback(*(answer, qname, rr, flags, extra))
 
     def finished(self):
         return not len(self._queries)

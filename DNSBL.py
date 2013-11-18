@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os, sys, string
 import ADNS
 
@@ -17,7 +16,7 @@ class DNSBL:
         self.URL = URL
         self.results = {}
         if results:
-            for result, name in results.items(): self.result(result, name)
+            for result, name in list(results.items()): self.result(result, name)
 
     def result(self, result, name):
         """Add a possible result set."""
@@ -44,7 +43,7 @@ class DNSBLQueryEngine(ADNS.QueryEngine):
         
     def submit_dnsbl(self, qname):
         from adns import rr
-        for l, d in self.blacklists.items():
+        for l, d in list(self.blacklists.items()):
             self.dnsbl_results[qname] = []
             self.submit_reverse_any(qname, d.zone, rr.A,
                                     callback=self.dnsbl_callback,
@@ -72,11 +71,11 @@ if __name__ == "__main__":
         s.submit_dnsbl(i)
     s.finish()
     listed = s.dnsbl_results
-    for k, v in listed.items():
+    for k, v in list(listed.items()):
         hits = []
         for l, url in v: hits.append(l)
         if len(listed) > 1:
-            print "%s: %s" % (k, string.join(hits))
+            print("%s: %s" % (k, string.join(hits)))
         else:
-            print string.join(hits)
+            print(string.join(hits))
             

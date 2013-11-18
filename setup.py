@@ -18,7 +18,7 @@ extra_objects = []
 if os.name == "posix": # most Linux/UNIX platforms
     libraries = ["adns"]
 else:
-    raise "UnknownPlatform", "sys.platform=%s, os.name=%s" % \
+    raise ValueError("sys.platform=%s, os.name=%s" )% \
           (sys.platform, os.name)
     
 long_description = \
@@ -28,13 +28,13 @@ resolver library.
 http://www.gnu.org/software/adns/
 """
 setup (# Distribution meta-data
-    name = "adns-python",
-    version = "1.2.2",
-    description = "An interface to GNU adns",
-    author = "Andy Dustman",
-    author_email = "farcepest@gmail.com",
-    url = "http://code.google.com/p/adns-python",
-    download_url = "http://adns-python.googlecode.com/files/adns-python-1.2.1.tar.gz",
+    name = "adns",
+    version = "1.3.0",
+    description = "An interface to GNU adns - python3 port",
+    author = "Loic Jaquemet",
+    author_email = "loic.jaquemet+python@gmail.com",
+    url = "https://github.com/trolldbois/python3-adns/",
+    download_url = "https://github.com/trolldbois/python3-adns/archive/master.tar.gz",
     long_description=long_description,
     license = "GPL",
     classifiers = [

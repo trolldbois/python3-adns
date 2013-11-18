@@ -31,9 +31,7 @@ typedef struct {
 	adns_state state;
 } ADNS_Stateobject;
 
-staticforward PyTypeObject ADNS_Statetype;
-
-
+static PyTypeObject ADNS_Statetype;
 
 /* ---------------------------------------------------------------- */
 
@@ -49,7 +47,7 @@ typedef struct {
 	PyObject *exc_traceback;
 } ADNS_Queryobject;
 
-staticforward PyTypeObject ADNS_Querytype;
+static PyTypeObject ADNS_Querytype;
 
 
 
@@ -231,7 +229,7 @@ interpret_answer(
 		case adns_r_cname:
 			{
 				char *(*v) = answer->rrs.str+i;
-				a = PyString_FromString(*v);
+				a = PyBytes_FromString(*v);
 			}
 			break;
 		case adns_r_txt:
@@ -247,7 +245,7 @@ interpret_answer(
 				if (!(a = PyTuple_New(array_len))) break;
 				for (ai = 0; ai < array_len; ai++)
 				{
-					txt = PyString_FromStringAndSize((*s)[ai].str, (*s)[ai].i);
+					txt = PyBytes_FromStringAndSize((*s)[ai].str, (*s)[ai].i);
 					if (!txt) {
 						Py_DECREF(a);
 						a = NULL;
@@ -262,7 +260,7 @@ interpret_answer(
 				a = interpret_hostaddr(answer->rrs.hostaddr+i);
 			} else {
 				char *(*v) = answer->rrs.str+i;
-				a = PyString_FromString(*v);
+				a = PyBytes_FromString(*v);
 			}
 			break;
 		case adns_r_soa_raw:
@@ -696,7 +694,11 @@ ADNS_State_getattr(
 	)
 {
 	/* XXXX Add your own getattr code here */
-	return Py_FindMethod(ADNS_State_methods, (PyObject *)self, name);
+	/*return Py_FindMethod(ADNS_State_methods, (PyObject *)self, name);*/
+    PyErr_Format(PyExc_AttributeError,
+                 "'%.50s' object has no attribute '%.400s'",
+                 Py_TYPE(self)->tp_name, name);
+    return NULL;	
 }
 
 static ADNS_Stateobject *
@@ -727,8 +729,7 @@ static char ADNS_Statetype__doc__[] =
 ;
 
 static PyTypeObject ADNS_Statetype = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,				/*ob_size*/
+	PyVarObject_HEAD_INIT(&PyType_Type, 0)
 	"ADNS_State",			/*tp_name*/
 	sizeof(ADNS_Stateobject),		/*tp_basicsize*/
 	0,				/*tp_itemsize*/
@@ -737,7 +738,7 @@ static PyTypeObject ADNS_Statetype = {
 	(printfunc)0,		/*tp_print*/
 	(getattrfunc)ADNS_State_getattr,	/*tp_getattr*/
 	(setattrfunc)0,	/*tp_setattr*/
-	(cmpfunc)0,		/*tp_compare*/
+	0,		/*reserved*/
 	(reprfunc)0,		/*tp_repr*/
 	0,			/*tp_as_number*/
 	0,		/*tp_as_sequence*/
@@ -900,7 +901,11 @@ ADNS_Query_getattr(
 	)
 {
 	/* XXXX Add your own getattr code here */
-	return Py_FindMethod(ADNS_Query_methods, (PyObject *)self, name);
+	/*return Py_FindMethod(ADNS_Query_methods, (PyObject *)self, name);*/
+    PyErr_Format(PyExc_AttributeError,
+                 "'%.50s' object has no attribute '%.400s'",
+                 Py_TYPE(self)->tp_name, name);
+    return NULL;	
 }
 
 static ADNS_Queryobject *
@@ -938,8 +943,7 @@ static char ADNS_Querytype__doc__[] =
 ;
 
 static PyTypeObject ADNS_Querytype = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,				/*ob_size*/
+	PyVarObject_HEAD_INIT(&PyType_Type, 0)
 	"ADNS_Query",			/*tp_name*/
 	sizeof(ADNS_Queryobject),		/*tp_basicsize*/
 	0,				/*tp_itemsize*/
@@ -948,7 +952,7 @@ static PyTypeObject ADNS_Querytype = {
 	(printfunc)0,		/*tp_print*/
 	(getattrfunc)ADNS_Query_getattr,	/*tp_getattr*/
 	(setattrfunc)0,	/*tp_setattr*/
-	(cmpfunc)0,		/*tp_compare*/
+	0,		/*reserved*/
 	(reprfunc)0,		/*tp_repr*/
 	0,			/*tp_as_number*/
 	0,		/*tp_as_sequence*/
@@ -1027,9 +1031,7 @@ static struct PyMethodDef adns_methods[] = {
 
 /* Initialization function for the module (*must* be called initadns) */
 
-static char adns_module_documentation[] = 
-""
-;
+static char adns_module_documentation[] = "adns python3 module";
 
 static PyObject *
 _new_exception(
@@ -1061,10 +1063,10 @@ _new_constant_class(
 	   fails to import, so probably no big deal */
 	if (!(d = PyDict_New())) goto error;
 	for (i = 0; table[i].name; i++) {
-		if (!(v = PyInt_FromLong((long)table[i].value))) goto error;
+		if (!(v = PyLong_FromLong((long)table[i].value))) goto error;
 		if (PyDict_SetItemString(d, table[i].name, v)) goto error;
 	}
-	if (!(c = PyClass_New(NULL,d,PyString_InternFromString(type)))) goto error;
+	if (!(c = PyClass_New(NULL,d,PyBytes_FromString(type)))) goto error;
 	if (PyDict_SetItemString(mdict, type, c)) goto error;
 	return 0;
   error:
@@ -1072,19 +1074,29 @@ _new_constant_class(
 	return -1;
 }
 
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "adns",     /* m_name */
+    adns_module_documentation,  /* m_doc */
+    -1,                  /* m_size */
+    adns_methods,    /* m_methods */
+    NULL,                /* m_reload */
+    NULL,                /* m_traverse */
+    NULL,                /* m_clear */
+    NULL,                /* m_free */
+};
+
 void
 initadns(void)
 {
 	PyObject *m, *d;
 
 	/* Create the module and add the functions */
-	m = Py_InitModule4("adns", adns_methods,
-		adns_module_documentation,
-		(PyObject*)NULL,PYTHON_API_VERSION);
+	m = PyModule_Create(&moduledef);
 
 	/* Add some symbolic constants to the module */
 	d = PyModule_GetDict(m);
-	ErrorObject = _new_exception(d, "Error", PyExc_StandardError);
+	ErrorObject = _new_exception(d, "Error", PyExc_ConnectionError);
 	NotReadyError = _new_exception(d, "NotReady", ErrorObject);
 	LocalError = _new_exception(d, "LocalError", ErrorObject);
 	RemoteError = _new_exception(d, "RemoteError", ErrorObject);

@@ -1,7 +1,6 @@
 """High-level interface to adns."""
 
 import adns
-from exceptions import Exception
 
 class Error(Exception): pass
 

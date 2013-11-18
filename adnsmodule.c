@@ -58,6 +58,15 @@ typedef struct {
 	int value;
 } _constant_class;
 
+/* int PyModule_AddIntConstant(PyObject *module, const char *name, long value) */
+
+static PyModuleDef module_iflags = {
+    PyModuleDef_HEAD_INIT,
+    "iflags",
+    "iflags Constants",
+    -1,
+    NULL, NULL, NULL, NULL, NULL
+};
 static _constant_class adns_iflags[] = {
 	{ "noenv", adns_if_noenv },
 	{ "noerrprint", adns_if_noerrprint },
@@ -72,6 +81,13 @@ static _constant_class adns_iflags[] = {
 	{ NULL, 0 },
 };
 
+static PyModuleDef module_qflags = {
+    PyModuleDef_HEAD_INIT,
+    "qflags",
+    "qflags Constants",
+    -1,
+    NULL, NULL, NULL, NULL, NULL
+};
 static _constant_class adns_qflags[] = {
 	{ "search", adns_qf_search },
 	{ "usevc", adns_qf_usevc },
@@ -86,6 +102,13 @@ static _constant_class adns_qflags[] = {
 	{ NULL, 0 },
 };
 
+static PyModuleDef module_rr = {
+    PyModuleDef_HEAD_INIT,
+    "rr",
+    "rr Constants",
+    -1,
+    NULL, NULL, NULL, NULL, NULL
+};
 static _constant_class adns_rr[] = {
 	{ "typemask", adns_rrt_typemask },
 	{ "deref", adns__qtf_deref },
@@ -112,6 +135,13 @@ static _constant_class adns_rr[] = {
 	{ NULL, 0 }
 };
 
+static PyModuleDef module_status = {
+    PyModuleDef_HEAD_INIT,
+    "status",
+    "status Constants",
+    -1,
+    NULL, NULL, NULL, NULL, NULL
+};
 static _constant_class adns_s[] = {
 	{ "ok", adns_s_ok },
 	{ "nomemory", adns_s_nomemory },
@@ -983,7 +1013,9 @@ _file_converter(
 	FILE **f
 	)
 {
-	*f = PyFile_AsFile(obj);
+	/*  *f = PyFile_AsFile(obj);*/
+	/* int PyObject_AsFileDescriptor(PyObject *p) */
+	*f = fdopen(PyObject_AsFileDescriptor(obj),"a+");
 	return (*f != NULL);
 }
 
@@ -1001,6 +1033,15 @@ adns__init(
 	char *configtext = NULL;
 	ADNS_Stateobject *s;
 
+    /* file is debug file
+    s=adns.init([initflags,debugfileobj=stderr,configtext=''])
+    
+    "|iO&s",
+    | Indicates that the remaining arguments in the Python argument list are optional.
+    i (int) [int]    Convert a Python integer to a plain C int.
+    O& (object) [converter, anything]  Convert a Python object to a C variable through a converter function.
+    s (string or Unicode) [const char *]  Convert a Python string or Unicode object to a C pointer to a character string
+    */
 	if (!PyArg_ParseTupleAndKeywords(
 		args, kwargs, "|iO&s", kwlist,
 		&flags, _file_converter, &diagfile, &configtext))
@@ -1029,7 +1070,6 @@ static struct PyMethodDef adns_methods[] = {
 };
 
 
-/* Initialization function for the module (*must* be called initadns) */
 
 static char adns_module_documentation[] = "adns python3 module";
 
@@ -1050,31 +1090,29 @@ _new_exception(
 	return v;
 }
 
+
+
 static int
 _new_constant_class(
-	PyObject *mdict,
-	char *type,
+    PyObject *module,
+	PyModuleDef *moduledef,
 	_constant_class *table
 	)
 {
-	PyObject *d, *c, *v;
-	int i;
-	/* XXX This leaks memory if it fails, but then the whole module
-	   fails to import, so probably no big deal */
-	if (!(d = PyDict_New())) goto error;
+    int i;
+    PyObject * m = PyModule_Create(moduledef);
+    if (m == NULL)
+        return -1;
+    /* int PyModule_AddIntConstant(PyObject *module, const char *name, long value)*/
 	for (i = 0; table[i].name; i++) {
-		if (!(v = PyLong_FromLong((long)table[i].value))) goto error;
-		if (PyDict_SetItemString(d, table[i].name, v)) goto error;
+        PyModule_AddIntConstant(m,table[i].name,(long)table[i].value);
+        printf("created %s %d\n",table[i].name,(long)table[i].value);
 	}
-	if (!(c = PyClass_New(NULL,d,PyBytes_FromString(type)))) goto error;
-	if (PyDict_SetItemString(mdict, type, c)) goto error;
+	PyModule_AddObject(module, moduledef->m_name, m);
 	return 0;
-  error:
-	Py_XDECREF(d);
-	return -1;
 }
 
-static struct PyModuleDef moduledef = {
+static struct PyModuleDef module_adns = {
     PyModuleDef_HEAD_INIT,
     "adns",     /* m_name */
     adns_module_documentation,  /* m_doc */
@@ -1086,16 +1124,21 @@ static struct PyModuleDef moduledef = {
     NULL,                /* m_free */
 };
 
-void
-initadns(void)
+/* Initialization function for the module  */
+
+PyMODINIT_FUNC
+PyInit_adns(void)
 {
 	PyObject *m, *d;
 
 	/* Create the module and add the functions */
-	m = PyModule_Create(&moduledef);
+    m = PyModule_Create(&module_adns);
+    if (m == NULL)
+        return NULL;
 
 	/* Add some symbolic constants to the module */
 	d = PyModule_GetDict(m);
+	/**  Py_INCREF + PyModule_AddObject( ??? - not using the object dict ? */
 	ErrorObject = _new_exception(d, "Error", PyExc_ConnectionError);
 	NotReadyError = _new_exception(d, "NotReady", ErrorObject);
 	LocalError = _new_exception(d, "LocalError", ErrorObject);
@@ -1109,13 +1152,16 @@ initadns(void)
 	NoDataError = _new_exception(d, "NoData", PermanentError);
 
 	/* XXXX Add constants here */
-	_new_constant_class(d, "iflags", adns_iflags);
-	_new_constant_class(d, "qflags", adns_qflags);
-	_new_constant_class(d, "rr", adns_rr);
-	_new_constant_class(d, "status", adns_s);
+	/**  Py_INCREF + PyModule_AddObject( ??? - not using the object dict ? */
+	_new_constant_class(m, &module_iflags, adns_iflags);
+	_new_constant_class(m, &module_qflags, adns_qflags);
+	_new_constant_class(m, &module_rr, adns_rr);
+	_new_constant_class(m, &module_status, adns_s);
 	/* Check for errors */
 	if (PyErr_Occurred())
 		Py_FatalError("can't initialize module adns");
+
+    return m;
 }
 
 

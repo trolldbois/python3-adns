@@ -5,9 +5,7 @@ the Free Software Foundation; either version 2, or (at your option)
 any later version.
 */
 
-#include "Python.h"
-#include "pymemcompat.h"
-#include "structmember.h"
+#include <Python.h>
 #include <adns.h>
 #include <string.h>
 #include <assert.h>
@@ -1174,7 +1172,7 @@ PyInit_adns(void)
     m = PyModule_Create(&module_adns);
     if (m == NULL)
         return NULL;
-    printf("created module adns %s %s\n",__DATE__, __TIME__);
+    /*printf("created module adns %s %s\n",__DATE__, __TIME__);*/
 
     /* Initialize object type properly*/
     /* maybe not a good idea, because of init values in newADNS_Queryobject*/

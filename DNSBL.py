@@ -75,7 +75,7 @@ if __name__ == "__main__":
         hits = []
         for l, url in v: hits.append(l)
         if len(listed) > 1:
-            print("%s: %s" % (k, string.join(hits)))
+            print("%s: %s" % (k, ','.join(hits)))
         else:
-            print(string.join(hits))
+            print(','.join(hits))
             

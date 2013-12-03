@@ -50,14 +50,10 @@ setup (# Distribution meta-data
     
     py_modules = ["DNSBL", "ADNS"],
     
-    ext_modules = [
-    Extension(
-    name='adns',
-    sources=['adnsmodule.c'],
-    include_dirs=include_dirs,
-    library_dirs=library_dirs,
-    runtime_library_dirs=runtime_library_dirs,
-    libraries=libraries,
-    extra_objects=extra_objects,
-    )],
+    #ext_modules = cythonize("adns.pyx"),
+    ext_modules = [    Extension(    name='adns',    sources=['adnsmodule.c'],
+              include_dirs=include_dirs,    library_dirs=library_dirs,
+              runtime_library_dirs=runtime_library_dirs,    libraries=libraries,
+              extra_objects=extra_objects,    )],
+
 )

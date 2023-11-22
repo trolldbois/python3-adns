@@ -29,7 +29,7 @@ http://www.gnu.org/software/adns/
 """
 setup (# Distribution meta-data
     name = "adns",
-    version = "1.4-py1",
+    version = "1.4.0",
     description = "An interface to GNU adns - python3 port",
     author = "Loic Jaquemet",
     author_email = "loic.jaquemet+python@gmail.com",

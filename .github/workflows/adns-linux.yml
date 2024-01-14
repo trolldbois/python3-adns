@@ -19,7 +19,7 @@ jobs:
           pip install setuptools setuptools_scm wheel build
       - name: Install Adns
         run: |
-          apt install -y libadns1-dev
+          sudo apt install -y libadns1-dev
       - name: Build package wheel
         run: python -m build -w
       - name: Upload built artifacts.

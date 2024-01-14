@@ -106,11 +106,17 @@ have Python 1.5.2, *upgrade already*!
 
 Then, you can build and install::
 
-    # We do not distribute wheels. But this is how
-    # $ python python -m build -w
+    # try to builds the C extension
+    $ python setup.py build
+
+    # We do not distribute wheels. But this is how. Does build the C extension
+    # $ python -m build -w
 
     # so we use a sdist instead
-    $ python python setup.py sdist
+    $ python setup.py sdist
+
+    # or build a sdist package with build. Does not validate the C extension.
+    $ python  -m build -s
 
 
 RTFM for Distutils for more options.

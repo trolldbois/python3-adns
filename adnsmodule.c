@@ -207,6 +207,7 @@ interpret_addr(
     //    o = Py_BuildValue("is", v->addr.inet.sin_family,
     //              inet_ntoa(v->addr.inet.sin_addr)) ;
     // return o;
+//    printf("interpret_addr was called\n");
 
     char buf[ADNS_ADDR2TEXT_BUFLEN];
     int sz = sizeof(buf);

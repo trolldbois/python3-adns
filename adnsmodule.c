@@ -67,6 +67,7 @@ static PyModuleDef module_iflags = {
     NULL, NULL, NULL, NULL, NULL
 };
 static _constant_class adns_iflags[] = {
+    { "none", adns_if_none },
     { "noenv", adns_if_noenv },
     { "noerrprint", adns_if_noerrprint },
     { "noserverwarn", adns_if_noserverwarn },
@@ -75,8 +76,13 @@ static _constant_class adns_iflags[] = {
     { "noautosys", adns_if_noautosys },
     { "eintr", adns_if_eintr },
     { "nosigpipe", adns_if_nosigpipe },
+    { "monotonic", adns_if_monotonic },
     { "checkc_entex", adns_if_checkc_entex },
     { "checkc_freq", adns_if_checkc_freq },
+    { "permit_ipv4", adns_if_permit_ipv4 },
+    { "permit_ipv6", adns_if_permit_ipv6 },
+    { "afmask", adns_if_afmask },
+    { "sizeforce", adns__if_sizeforce },
     { NULL, 0 },
 };
 
@@ -88,6 +94,7 @@ static PyModuleDef module_qflags = {
     NULL, NULL, NULL, NULL, NULL
 };
 static _constant_class adns_qflags[] = {
+    { "none", adns_qf_none },
     { "search", adns_qf_search },
     { "usevc", adns_qf_usevc },
     { "owner", adns_qf_owner },
@@ -96,8 +103,17 @@ static _constant_class adns_qflags[] = {
     { "quoteok_anshost", adns_qf_quoteok_anshost },
     { "quotefail_cname", adns_qf_quotefail_cname },
     { "cname_loose", adns_qf_cname_loose },
+    { "cname_strict", adns_qf_cname_strict },
     { "cname_forbid", adns_qf_cname_forbid },
+    { "want_ipv4 ", adns_qf_want_ipv4 },
+    { "want_ipv6", adns_qf_want_ipv6 },
+    { "want_allaf", adns_qf_want_allaf },
+    { "ipv6_mapv4", adns_qf_ipv6_mapv4 },
+    { "addrlit_scope_forbid ", adns_qf_addrlit_scope_forbid },
+    { "addrlit_scope_numeric", adns_qf_addrlit_scope_numeric },
+    { "addrlit_ipv4_quadonly", adns_qf_addrlit_ipv4_quadonly },
     { "internalmask", adns__qf_internalmask },
+    { "sizeforce", adns__qf_sizeforce },
     { NULL, 0 },
 };
 
@@ -110,8 +126,12 @@ static PyModuleDef module_rr = {
 };
 static _constant_class adns_rr[] = {
     { "typemask", adns_rrt_typemask },
-    { "deref", adns__qtf_deref },
+    { "reprmask", adns_rrt_reprmask },
+    { "deref_bit", adns__qtf_deref_bit },
     { "mail822", adns__qtf_mail822 },
+    { "bigaddr", adns__qtf_bigaddr },
+    { "manyaf", adns__qtf_manyaf },
+    { "deref", adns__qtf_deref },
     { "unknown", adns_r_unknown },
     { "none", adns_r_none },
     { "A", adns_r_a },
@@ -128,9 +148,11 @@ static _constant_class adns_rr[] = {
     { "TXT", adns_r_txt },
     { "RPraw", adns_r_rp_raw },
     { "RP", adns_r_rp },
+    { "AAAA", adns_r_aaaa },
     { "SRVraw", adns_r_srv_raw },
     { "SRV", adns_r_srv },
     { "ADDR", adns_r_addr },
+    { "sizeforce", adns__rrt_sizeforce },
     { NULL, 0 }
 };
 
@@ -181,8 +203,21 @@ interpret_addr(
     )
 {
     PyObject *o;
-    o = Py_BuildValue("is", v->addr.inet.sin_family, 
-              inet_ntoa(v->addr.inet.sin_addr)) ;
+    // orig. type+string
+    //    o = Py_BuildValue("is", v->addr.inet.sin_family,
+    //              inet_ntoa(v->addr.inet.sin_addr)) ;
+    // return o;
+
+    char buf[ADNS_ADDR2TEXT_BUFLEN];
+    int sz = sizeof(buf);
+    int ret;
+    int port;
+
+    ret = adns_addr2text(&v->addr.sa, 0, buf, &sz, &port);
+    if ( ret != 0 ) {
+        printf("error in adns_addr2text: %s\n", strerror(ret));
+    }
+    o = Py_BuildValue("is", v->addr.sa.sa_family, buf);
     return o;
 }
 
@@ -228,8 +263,18 @@ interpret_answer(
             if (td) {
                 a = interpret_addr((answer->rrs.addr+i));
             } else {
-                struct in_addr *v = answer->rrs.inaddr+i;
-                a = Py_BuildValue("s", inet_ntoa(*v));
+                char buf[INET_ADDRSTRLEN];
+                a = Py_BuildValue("s",
+                        inet_ntop(AF_INET, answer->rrs.inaddr+i, buf, sizeof(buf)));
+            }
+            break;
+        case adns_r_aaaa:
+            if (td) {
+                a = interpret_addr((answer->rrs.addr+i));
+            } else {
+                char buf[INET6_ADDRSTRLEN];
+                a = Py_BuildValue("s",
+                        inet_ntop(AF_INET6, answer->rrs.in6addr+i, buf, sizeof(buf)));
             }
             break;
         case adns_r_hinfo:

@@ -1,30 +1,16 @@
-Build Instructions
+Installation Instructions
 ==================
 
-First, you gotta have the adns_ libraries installed somewhere. Maybe
-your OS vendor has it packaged already.
-
-.. _adns: http://www.chiark.greenend.org.uk/~ian/adns/
+Install the ADNS library and development files.
 
     # sudo apt install libadns1-dev
 
-For adns-python-1.2.0 and newer, you *must* have at least adns-1.2.
+Install the python package
 
-Second, you gotta have Distutils_, which comes in Python 1.6 and up. If you
-have Python 1.5.2, *upgrade already*!
+    $ (venv) pip install adns
 
-.. _Distutils: http://www.python.org/sigs/distutils-sig/download.html
+You are set.
 
-Then, you can build and install::
-
-    # Pypi does not like wheel with paltform info
-    # $ python python -m build -w
-
-    # so used a sdist instead
-    $ python python setup.py sdist
-
-
-RTFM for Distutils for more options.
 
 Usage
 =====
@@ -98,3 +84,33 @@ and older, use adns-python-1.1.1.
 	Andy Dustman <farcepest@gmail.com>
 :Date:
 	January 27, 2007
+
+
+
+Build Instructions
+==================
+
+First, you gotta have the adns_ libraries installed somewhere. Maybe
+your OS vendor has it packaged already.
+
+.. _adns: http://www.chiark.greenend.org.uk/~ian/adns/
+
+    # sudo apt install libadns1-dev
+
+For adns-python-1.2.0 and newer, you *must* have at least adns-1.2.
+
+Second, you gotta have Distutils_, which comes in Python 1.6 and up. If you
+have Python 1.5.2, *upgrade already*!
+
+.. _Distutils: http://www.python.org/sigs/distutils-sig/download.html
+
+Then, you can build and install::
+
+    # We do not distribute wheels. But this is how
+    # $ python python -m build -w
+
+    # so we use a sdist instead
+    $ python python setup.py sdist
+
+
+RTFM for Distutils for more options.

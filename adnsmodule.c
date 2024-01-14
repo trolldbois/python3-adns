@@ -493,11 +493,11 @@ ADNS_State_submit_reverse(
     ADNS_Queryobject *o;
     if (!PyArg_ParseTuple(args, "si|i", &owner, &type, &flags))
         return NULL;
-        r = inet_aton(owner, (struct in_addr *) &(addr.sin_addr));
-        if (!r) {
-                PyErr_SetString(ErrorObject, "invalid IP address");
-                return NULL;
-        }
+    r = inet_aton(owner, (struct in_addr *) &(addr.sin_addr));
+    if (!r) {
+        PyErr_SetString(ErrorObject, "invalid IP address");
+        return NULL;
+    }
     addr.sin_family = AF_INET;
     o = newADNS_Queryobject(self);
     Py_BEGIN_ALLOW_THREADS;
@@ -533,11 +533,11 @@ ADNS_State_submit_reverse_any(
     ADNS_Queryobject *o;
     if (!PyArg_ParseTuple(args, "ssi|i", &owner, &zone, &type, &flags))
         return NULL;
-        r = inet_aton(owner, &(addr.sin_addr));
-        if (!r) {
-                PyErr_SetString(ErrorObject, "invalid IP address");
-                return NULL;
-        }
+    r = inet_aton(owner, &(addr.sin_addr));
+    if (!r) {
+        PyErr_SetString(ErrorObject, "invalid IP address");
+        return NULL;
+    }
     addr.sin_family = AF_INET;
     o = newADNS_Queryobject(self);
     Py_BEGIN_ALLOW_THREADS;

@@ -1,8 +1,8 @@
 import os, sys, string
 import ADNS
 
-class DNSBL:
 
+class DNSBL:
     """A class for defining various DNS-based blacklists."""
 
     def __init__(self, name, zone, URL='', results=None):
@@ -26,7 +26,7 @@ class DNSBL:
         """Return a URL to information on the list of ip on this
         blacklist."""
         return self.URL % ip
-    
+
 
 class DNSBLQueryEngine(ADNS.QueryEngine):
 
@@ -36,11 +36,11 @@ class DNSBLQueryEngine(ADNS.QueryEngine):
         self.dnsbl_results = {}
         if blacklists:
             for l in blacklists: self.blacklist(l)
-            
+
     def blacklist(self, dnsbl):
         """Add a DNSBL."""
         self.blacklists[dnsbl.name] = dnsbl
-        
+
     def submit_dnsbl(self, qname):
         from adns import rr
         for l, d in list(self.blacklists.items()):
@@ -52,9 +52,10 @@ class DNSBLQueryEngine(ADNS.QueryEngine):
     def dnsbl_callback(self, answer, qname, rr, flags, l):
         if not answer[0]:
             for addr in answer[3]:
-                self.dnsbl_results[qname].append( (
-                    self.blacklists[l].results.get(addr, "%s-%s"%(l,addr)),
-                    self.blacklists[l].getURL(qname)) )
+                self.dnsbl_results[qname].append((
+                    self.blacklists[l].results.get(addr, "%s-%s" % (l, addr)),
+                    self.blacklists[l].getURL(qname)))
+
 
 if __name__ == "__main__":
     blacklists = [
@@ -63,8 +64,8 @@ if __name__ == "__main__":
               {'127.0.0.2': 'ORDB'}),
         DNSBL('DEVNULL', 'dev.null.dk.',
               'http://fabel.dk/relay/test/index.epl?ip=%s&send=Check',
-              { '127.0.0.2': 'DEVNULL' }),
-        ]
+              {'127.0.0.2': 'DEVNULL'}),
+    ]
 
     s = DNSBLQueryEngine(blacklists=blacklists)
     for i in sys.argv[1:]:
@@ -78,4 +79,3 @@ if __name__ == "__main__":
             print("%s: %s" % (k, ','.join(hits)))
         else:
             print(','.join(hits))
-            

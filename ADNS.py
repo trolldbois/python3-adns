@@ -2,14 +2,15 @@
 
 import adns
 
+
 class Error(Exception): pass
 
-class QueryEngine:
 
+class QueryEngine:
     callback_submit = None
     callback_submit_reverse = None
     callback_submit_reverse_any = None
-    
+
     def __init__(self, s=None):
         self._s = s or adns.init(adns.iflags.noautosys)
         self._queries = {}
@@ -38,9 +39,11 @@ class QueryEngine:
 
     def cancel(self, query):
         query.cancel()
-        try: del self._queries[query]
-        except KeyError: pass
-        
+        try:
+            del self._queries[query]
+        except KeyError:
+            pass
+
     def run(self, timeout=0):
         for q in self._s.completed(timeout):
             answer = q.check()
@@ -57,12 +60,13 @@ class QueryEngine:
 
     def run_max(self, max):
         from time import time
-        quittime = time()+max
-        while not self.finished() and time()<=quittime:
+        quittime = time() + max
+        while not self.finished() and time() <= quittime:
             self.run(1)
 
     def globalsystemfailure(self):
         self._s.globalsystemfailure()
         self._queries.clear()
+
 
 init = QueryEngine

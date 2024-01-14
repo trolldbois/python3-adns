@@ -6,6 +6,8 @@ your OS vendor has it packaged already.
 
 .. _adns: http://www.chiark.greenend.org.uk/~ian/adns/
 
+    # sudo apt install libadns1-dev
+
 For adns-python-1.2.0 and newer, you *must* have at least adns-1.2.
 
 Second, you gotta have Distutils_, which comes in Python 1.6 and up. If you
@@ -15,13 +17,9 @@ have Python 1.5.2, *upgrade already*!
 
 Then, you can build and install::
 
-    $ python setup.py build
+    $ python python -m build -w
     # python setup.py install # this is as root; use su or sudo
 
-Other useful things::
-
-    $ python setup.py bdist # make a binary distribution
-    $ python setup.py bdist_rpm # make an RPM
 
 RTFM for Distutils for more options.
 

@@ -12,6 +12,9 @@ any later version.
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+#  include <sys/endian.h>
+#endif
 
 static PyObject *ErrorObject;
 static PyObject *NotReadyError;
